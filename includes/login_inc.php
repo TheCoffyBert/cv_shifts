@@ -9,7 +9,7 @@ if(isset($_POST['login-submit'])){
     $pwd = $_POST['pwd'];
 
     if(empty($email) || empty($pwd)){
-        header("Location: ../index.php?error=emptyFields&email".$email);
+        header("Location: ../login.php?error=emptyFields&email".$email);
         exit();
     } else {
         //TODO: Add comments. This is basically a part of code in which you ckeck for the connection, similar to the one in the signup form
@@ -17,7 +17,7 @@ if(isset($_POST['login-submit'])){
         $statement = mysqli_stmt_init($conn);
 
         if(!mysqli_stmt_prepare($statement, $sql)){
-            header("Location: ../index.php?error=sqlError");
+            header("Location: ../login.php?error=sqlError");
             exit();
         } else {
             //TODO: Better comments. Binding parameters to the SQL Query
@@ -31,7 +31,7 @@ if(isset($_POST['login-submit'])){
                 $pwdCheck = password_verify($password, $row['userPwd']);
 
                 if($pwdCheck == false){
-                    header("Location: ../index.php?error=wrongPassword");
+                    header("Location: ../login.php?error=wrongPassword");
                     exit();
                 } else if($pwdCheck == true){
                     session_start();
@@ -39,21 +39,21 @@ if(isset($_POST['login-submit'])){
                     $_SESSION['UEM'] = $row['userEmail'];
                     //Note: Maybe I should add a session variable to store the real name of the user...
 
-                    header("Location: ../index.php?login=success");
+                    header("Location: ../main.php?login=success");
                     exit();
                 } else {
-                    header("Location: ../index.php?error=WhatTheActualFuck");
+                    header("Location: ../login.php?error=WhatTheActualFuck");
                     exit();
                 }
                 
             } else {
-                header("Location: ../index.php?error=noUser");
+                header("Location: ../login.php?error=noUser");
                 exit();
             }
         }
     }
 
 } else {
-    header("Location: ../index.php");
+    header("Location: ../login.php");
     exit();
 }
