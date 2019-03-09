@@ -26,8 +26,8 @@ if (isset($_POST['modify_shift-submit'])){
         $services = NULL;
     }
     $service_description = $_POST['service_description'];
-    if ($services == ''){
-        $services = NULL;
+    if ($service_description == ''){
+        $service_description = NULL;
     }
 
     /*
