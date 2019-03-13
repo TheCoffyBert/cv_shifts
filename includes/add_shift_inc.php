@@ -35,19 +35,19 @@ if (isset($_POST['add_shift-submit'])){
      * checks for:
      *  - Empty start or end fields;
      *  - Empty service description if there's at least a service;
-     * - TODO: There's already a service that matches both start and end time
+     * - There's already a service that matches both start and end time
     */
 
     if (empty($start) || empty($end)){
-        //TODO: Send back the end time too
-        header("Location: ../add_shift.php?error=emptyFields&start".$start);
+        header("Location: ../add_shift.php?error=emptyFields&start=".$start."&end=".$end);
         exit();
-        //TODO: Send back all the non-empty fields
     } elseif($services != NULL && empty($service_description)){
-        header("Location: ../add_shift.php?error=missingDescription");
+        //I decided to send back only the service variable because it doesn't make sense to fill all the other fields when there's a service
+        header("Location: ../add_shift.php?error=missingDescription&start=".$start."&end=".$end."&services=".$services);
         exit();
     } else {
-        $sql = "INSERT INTO shifts (shiftStart, shiftEnd, shiftTotalTime, shiftEmergencies, shiftTransports, shiftServices, shiftServiceDescription) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+        $sql = "SELECT * FROM shifts WHERE shiftStart=? AND shiftEnd=?";
         $statement = mysqli_stmt_init($conn);
 
         //Check if the connection is working. If so, it checks if the user is already in the DB
@@ -55,11 +55,32 @@ if (isset($_POST['add_shift-submit'])){
             header("Location: ../add_shift.php?error=sqlError");
             exit();
         } else {
-            mysqli_stmt_bind_param($statement, "ssiiiis", $start, $end, $time, $emergencies, $transports, $services, $service_description);
+
+            mysqli_stmt_bind_param($statement, "ss", $start, $end);
             mysqli_stmt_execute($statement);
-            //Success! Returning to the signup page...
-            header("Location: ../index.php?add_shift=success");
-            exit();
+            mysqli_stmt_store_result($statement); /*NOTE TO MYSELF: it stores the result into the statement variable*/
+            $resultCheck = mysqli_stmt_num_rows($statement);
+
+            if ($resultCheck > 0) {
+                header("Location: ../add_shift.php?error=shiftAlreadyExists");
+                exit();
+            } else {
+
+                $sql = "INSERT INTO shifts (shiftStart, shiftEnd, shiftTotalTime, shiftEmergencies, shiftTransports, shiftServices, shiftServiceDescription) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                $statement = mysqli_stmt_init($conn);
+
+                if (!mysqli_stmt_prepare($statement, $sql)){
+                    header("Location: ../add_shift.php?error=sqlError");
+                    exit();
+                } else {
+
+                    mysqli_stmt_bind_param($statement, "ssiiiis", $start, $end, $time, $emergencies, $transports, $services, $service_description);
+                    mysqli_stmt_execute($statement);
+                    //Success! Returning to the signup page...
+                    header("Location: ../index.php?add_shift=success");
+                    exit();
+                }
+            }
         }
     }
 
